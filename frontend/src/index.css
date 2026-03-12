@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: #1a2d4a #050a14;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  *::-webkit-scrollbar-track { background: #050a14; }
+  *::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 2px; }
+  *::-webkit-scrollbar-thumb:hover { background: #00d4ff44; }
+
+  html { background: #050a14; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #050a14;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply bg-cyber-card/80 backdrop-blur-sm border border-cyber-border rounded-xl;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:border-cyber-neon/30 hover:shadow-lg hover:shadow-cyber-neon/5;
+  }
+
+  /* Neon Glow Effects */
+  .neon-text-cyan { text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff88; }
+  .neon-text-green { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff8888; }
+  .neon-text-red   { text-shadow: 0 0 10px #ff3366, 0 0 20px #ff336688; }
+
+  .neon-border-cyan { box-shadow: 0 0 15px #00d4ff22, inset 0 0 15px #00d4ff08; }
+  .neon-border-green { box-shadow: 0 0 15px #00ff8822, inset 0 0 15px #00ff8808; }
+  .neon-border-red { box-shadow: 0 0 15px #ff336622, inset 0 0 15px #ff336608; }
+
+  /* Severity Badge */
+  .badge-critical {
+    @apply px-2 py-0.5 rounded text-xs font-semibold font-mono bg-red-500/20 text-red-400 border border-red-500/40;
+  }
+  .badge-high {
+    @apply px-2 py-0.5 rounded text-xs font-semibold font-mono bg-orange-500/20 text-orange-400 border border-orange-500/40;
+  }
+  .badge-medium {
+    @apply px-2 py-0.5 rounded text-xs font-semibold font-mono bg-yellow-500/20 text-yellow-400 border border-yellow-500/40;
+  }
+  .badge-low {
+    @apply px-2 py-0.5 rounded text-xs font-semibold font-mono bg-blue-500/20 text-blue-400 border border-blue-500/40;
+  }
+  .badge-info {
+    @apply px-2 py-0.5 rounded text-xs font-semibold font-mono bg-gray-500/20 text-gray-400 border border-gray-500/40;
+  }
+
+  /* Scan line animation overlay */
+  .scanline {
+    position: relative;
+    overflow: hidden;
+  }
+  .scanline::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00d4ff44, transparent);
+    animation: scan 4s linear infinite;
+  }
+
+  /* Terminal-style text */
+  .terminal {
+    @apply font-mono text-cyber-green text-sm;
+    text-shadow: 0 0 8px #00ff8866;
+  }
+
+  /* Threat type label */
+  .threat-label {
+    @apply font-mono text-xs uppercase tracking-wider;
+  }
+
+  /* Risk gauge colors */
+  .risk-low { @apply text-cyber-green; }
+  .risk-medium { @apply text-cyber-yellow; }
+  .risk-high { @apply text-cyber-orange; }
+  .risk-critical { @apply text-cyber-red; }
+
+  /* Animated status dot */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  .status-dot-active {
+    @apply status-dot bg-cyber-green;
+    animation: statusPulse 2s ease-in-out infinite;
+  }
+  .status-dot-alert {
+    @apply status-dot bg-cyber-red;
+    animation: statusPulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px currentColor; }
+  50% { opacity: 0.4; box-shadow: none; }
+}
+
+/* Grid background pattern */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Gradient borders */
+.gradient-border {
+  position: relative;
+  border-radius: 12px;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #00d4ff33, #9b59ff22, #00d4ff11);
+  z-index: -1;
+}
+
+/* Chart container */
+.chart-container {
+  position: relative;
+  height: 200px;
+}
+
+/* Floating particles effect for background */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}

@@ -1,0 +1,228 @@
+{
+  "description": "MD-ADSS Sample Cybersecurity Dataset — Multi-attack scenario demo",
+  "version": "1.0.0",
+  "scenarios": {
+    "brute_force": {
+      "description": "Automated brute-force login attack against admin account",
+      "events": [
+        {
+          "id": "bf-001",
+          "timestamp": "2026-03-12T08:15:00Z",
+          "source": "auth",
+          "source_ip": "185.220.101.1",
+          "event_type": "login_failure",
+          "payload": {
+            "username": "admin",
+            "hostname": "SRV-DC-01",
+            "success": false,
+            "method": "password",
+            "user_agent": "Hydra/9.3",
+            "attempts_last_hour": 150
+          },
+          "raw_text": "AUTH FAILURE user=admin src=185.220.101.1 host=SRV-DC-01 tool=Hydra"
+        },
+        {
+          "id": "bf-002",
+          "timestamp": "2026-03-12T08:15:02Z",
+          "source": "auth",
+          "source_ip": "185.220.101.1",
+          "event_type": "login_failure",
+          "payload": {
+            "username": "admin",
+            "hostname": "SRV-DC-01",
+            "success": false,
+            "method": "password",
+            "user_agent": "Hydra/9.3",
+            "attempts_last_hour": 151
+          },
+          "raw_text": "AUTH FAILURE user=admin src=185.220.101.1 host=SRV-DC-01 tool=Hydra"
+        },
+        {
+          "id": "bf-003",
+          "timestamp": "2026-03-12T08:15:04Z",
+          "source": "firewall",
+          "source_ip": "185.220.101.1",
+          "event_type": "firewall_allow",
+          "payload": {
+            "action": "ALLOW",
+            "port": 22,
+            "protocol": "TCP",
+            "rule_id": "FW-443",
+            "zone_src": "EXTERNAL",
+            "zone_dst": "INTERNAL"
+          },
+          "raw_text": "FIREWALL ALLOW 185.220.101.1 -> 10.0.1.15:22"
+        }
+      ],
+      "expected_nova_lite_output": {
+        "threat_type": "brute_force",
+        "severity": "high",
+        "confidence": 0.94,
+        "explanation": "Automated brute-force attack using Hydra from 185.220.101.1 with 150+ attempts in the last hour targeting admin account on domain controller SRV-DC-01.",
+        "indicators": ["automated_tool:Hydra", "src_ip:185.220.101.1", "target_user:admin", "attempts:150"],
+        "affected_asset": "SRV-DC-01"
+      },
+      "expected_nova_act_output": {
+        "actions": ["block_ip", "force_password_reset", "notify_admin"],
+        "priority": 2,
+        "reasoning": "High-confidence brute force attack. IP 185.220.101.1 identified as Tor exit node with malicious reputation. Immediate IP block and credential reset required.",
+        "execution_steps": [
+          "1. Block IP 185.220.101.1 at perimeter firewall",
+          "2. Force password reset for admin account",
+          "3. Review all login logs for successful authentication from this IP",
+          "4. Update brute-force detection thresholds",
+          "5. Notify SOC team"
+        ],
+        "auto_execute": true
+      }
+    },
+    "ransomware": {
+      "description": "Active ransomware infection with C2 communication",
+      "events": [
+        {
+          "id": "rw-001",
+          "timestamp": "2026-03-12T10:30:00Z",
+          "source": "endpoint",
+          "source_ip": "10.0.1.45",
+          "event_type": "file_encrypt",
+          "payload": {
+            "hostname": "WS-FINANCE-01",
+            "operation": "encrypt",
+            "file_path": "C:\\Users\\Documents\\Q1_Budget.xlsx.encrypted",
+            "process": "svchost_update.exe",
+            "pid": 7832,
+            "cpu_usage": 95.2,
+            "memory_mb": 2048,
+            "files_encrypted_total": 127
+          },
+          "raw_text": "ENDPOINT WS-FINANCE-01 ENCRYPT Q1_Budget.xlsx.encrypted proc=svchost_update.exe CPU=95%"
+        },
+        {
+          "id": "rw-002",
+          "timestamp": "2026-03-12T10:30:15Z",
+          "source": "network",
+          "source_ip": "10.0.1.45",
+          "destination_ip": "91.219.237.229",
+          "event_type": "c2_beacon",
+          "payload": {
+            "protocol": "HTTPS",
+            "port": 443,
+            "domain": "beacon.darkops.io",
+            "bytes_sent": 320,
+            "bytes_received": 2048,
+            "interval_seconds": 60,
+            "beacon_count": 42
+          },
+          "raw_text": "NETWORK 10.0.1.45 -> C2 beacon to beacon.darkops.io interval=60s"
+        }
+      ],
+      "expected_nova_lite_output": {
+        "threat_type": "ransomware",
+        "severity": "critical",
+        "confidence": 0.97,
+        "explanation": "Active ransomware infection confirmed on WS-FINANCE-01. 127 files encrypted by suspicious process svchost_update.exe with C2 communication to beacon.darkops.io (91.219.237.229). Immediate containment required.",
+        "indicators": ["file_encryption:127_files", "c2_beacon:beacon.darkops.io", "process:svchost_update.exe", "high_cpu:95%"],
+        "affected_asset": "WS-FINANCE-01"
+      },
+      "expected_nova_act_output": {
+        "actions": ["isolate_machine", "block_ip", "quarantine_file", "notify_admin"],
+        "priority": 1,
+        "reasoning": "CRITICAL: Active ransomware confirmed. Immediate isolation of WS-FINANCE-01 required to prevent lateral spread to financial systems. C2 channel to 91.219.237.229 must be severed.",
+        "execution_steps": [
+          "1. IMMEDIATE: Isolate WS-FINANCE-01 from network",
+          "2. Block C2 IP 91.219.237.229 at all firewalls",
+          "3. Quarantine svchost_update.exe and encrypted files",
+          "4. Scan adjacent hosts 10.0.1.x for similar activity",
+          "5. Activate backup recovery procedures for finance data",
+          "6. Escalate to incident response team"
+        ],
+        "auto_execute": true
+      }
+    },
+    "phishing": {
+      "description": "Targeted spear-phishing campaign",
+      "events": [
+        {
+          "id": "ph-001",
+          "timestamp": "2026-03-12T09:00:00Z",
+          "source": "email",
+          "source_ip": "45.154.98.12",
+          "event_type": "phishing_attempt",
+          "payload": {
+            "sender": "security@amaz0n-security.com",
+            "recipient": "admin@company.com",
+            "subject": "Urgent: Your account has been compromised",
+            "has_attachment": true,
+            "attachment_name": "Security_Update.exe",
+            "urls_count": 5,
+            "suspicious_urls": ["http://amaz0n-security.com/verify", "http://bit.ly/3xAbCd"],
+            "spf_pass": false,
+            "dkim_pass": false,
+            "dmarc_pass": false
+          },
+          "raw_text": "EMAIL from=security@amaz0n-security.com to=admin@company.com subject='Urgent: Your account has been compromised'"
+        }
+      ],
+      "expected_nova_lite_output": {
+        "threat_type": "phishing",
+        "severity": "high",
+        "confidence": 0.96,
+        "explanation": "High-confidence phishing email detected. Domain amaz0n-security.com is a typosquatted Amazon domain. All email authentication checks failed (SPF, DKIM, DMARC). Executable attachment Security_Update.exe present. Subject line creates false urgency.",
+        "indicators": ["typosquatted_domain:amaz0n-security.com", "auth_failure:SPF+DKIM+DMARC", "executable_attachment:Security_Update.exe", "urgency_subject"],
+        "affected_asset": "admin@company.com"
+      },
+      "expected_nova_act_output": {
+        "actions": ["quarantine_file", "notify_admin", "increase_monitoring", "update_firewall_rules"],
+        "priority": 2,
+        "reasoning": "Targeted spear-phishing with executable attachment. Email has failed all authentication checks. Quarantine entire email thread, block sender domain, and notify admin.",
+        "execution_steps": [
+          "1. Quarantine email and attachments across all mailboxes",
+          "2. Block domain amaz0n-security.com at email gateway",
+          "3. Notify admin of phishing attempt",
+          "4. Check if attachment was executed on any endpoint",
+          "5. Search for similar emails from same IP range",
+          "6. Add IOCs to threat intelligence feeds"
+        ],
+        "auto_execute": false
+      }
+    }
+  },
+  "normal_baseline": {
+    "description": "Normal activity baseline for anomaly comparison",
+    "events": [
+      {
+        "id": "norm-001",
+        "timestamp": "2026-03-12T09:30:00Z",
+        "source": "auth",
+        "source_ip": "10.0.1.22",
+        "event_type": "login_success",
+        "payload": {
+          "username": "jdoe",
+          "hostname": "WS-DEV-03",
+          "success": true,
+          "method": "mfa",
+          "user_agent": "Mozilla/5.0",
+          "attempts_last_hour": 1
+        },
+        "raw_text": "AUTH SUCCESS user=jdoe src=10.0.1.22 host=WS-DEV-03 method=mfa"
+      },
+      {
+        "id": "norm-002",
+        "timestamp": "2026-03-12T09:31:00Z",
+        "source": "network",
+        "source_ip": "198.51.100.23",
+        "destination_ip": "10.0.1.22",
+        "event_type": "connection",
+        "payload": {
+          "protocol": "HTTPS",
+          "port": 443,
+          "bytes_sent": 1024,
+          "bytes_received": 8192,
+          "duration_ms": 250,
+          "packets": 15
+        },
+        "raw_text": "TCP 198.51.100.23:54321 -> 10.0.1.22:443 bytes=1024"
+      }
+    ]
+  }
+}
